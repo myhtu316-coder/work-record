@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050b14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="工作記錄">
+<title>工作記錄小本本</title>
+<style>
+  :root {
+    --bg:#050b14; --panel:#0c1626; --line:#1b2c44;
+    --cyan:#00f3ff; --green:#3dffb0; --pink:#ff5fa2; --yellow:#ffd600;
+    --txt:#dbe9ff; --dim:#7e93b3;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#0a1a2e,var(--bg));
+    color:var(--txt);font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    min-height:100vh;padding:env(safe-area-inset-top) 14px 90px}
+  .wrap{max-width:760px;margin:0 auto;padding:14px 0 90px}
+  header{text-align:center;padding:18px 0 10px}
+  header h1{margin:0;font-size:24px;font-weight:900;letter-spacing:1px;color:#fff;
+    text-shadow:0 0 14px var(--cyan),0 0 28px rgba(0,243,255,.5)}
+  header p{margin:6px 0 0;color:var(--dim);font-size:12px}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 2px;position:sticky;top:0;
+    background:linear-gradient(var(--bg),rgba(5,11,20,.92));z-index:20}
+  .tab{flex:0 0 auto;padding:9px 13px;border:1px solid var(--line);border-radius:999px;
+    font-size:13px;font-weight:700;color:var(--dim);background:var(--panel);white-space:nowrap}
+  .tab.on{color:#04121f;background:linear-gradient(90deg,var(--cyan),var(--green));
+    border-color:transparent;box-shadow:0 0 16px rgba(0,243,255,.5)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:16px;margin:12px 0;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  .card h2{margin:0 0 12px;font-size:16px;color:var(--cyan);text-shadow:0 0 10px rgba(0,243,255,.4)}
+  label{display:block;font-size:12px;color:var(--dim);margin:12px 0 5px;font-weight:700}
+  input,select{width:100%;padding:12px;font-size:16px;border-radius:10px;
+    border:1px solid var(--line);background:#08111f;color:var(--txt);outline:none}
+  input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,243,255,.18)}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  .fld{display:flex;flex-direction:column}
+  .btn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;
+    font-size:15px;font-weight:900;color:#04121f;cursor:pointer;
+    background:linear-gradient(90deg,var(--cyan),var(--green));
+    box-shadow:0 0 18px rgba(0,243,255,.45)}
+  .btn.alt{background:linear-gradient(90deg,var(--pink),#ff9f43);box-shadow:0 0 18px rgba(255,95,162,.45);color:#fff}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);box-shadow:none}
+  .out{margin-top:14px;padding:14px;border-radius:12px;background:#08111f;
+    border:1px dashed var(--line);font-size:15px;line-height:1.7}
+  .out b{color:var(--green);font-size:18px}
+  .hint{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--cyan);font-weight:700}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .logitem{padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:8px;font-size:13px}
+  .del{float:right;color:var(--pink);font-size:12px;cursor:pointer;font-weight:700;margin-left:8px}
+  .seg{display:flex;gap:6px;margin:6px 0}
+  .seg button{flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;
+    background:#08111f;color:var(--dim);font-weight:700;font-size:13px}
+  .seg button.on{color:#04121f;background:linear-gradient(90deg,var(--pink),#ff9f43);border-color:transparent}
+  footer{text-align:center;color:var(--dim);font-size:11px;padding:20px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📒 工作記錄小本本</h1>
+    <p>每日上班、加班、數量、績效｜本地儲存｜離線可用</p>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-t="log">📝 記錄</div>
+    <div class="tab" data-t="list">📋 列表</div>
+    <div class="tab" data-t="stat">📊 統計</div>
+    <div class="tab" data-t="data">💾 資料</div>
+  </div>
+
+  <!-- 記錄 -->
+  <section id="log" class="tabpane">
+    <div class="card">
+      <h2>➕ 新增記錄</h2>
+      <label>日期</label>
+      <input type="date" id="dDate">
+      <div class="row">
+        <div class="fld"><label>上班時數</label><input type="number" id="dWork" step="0.5" min="0" max="24" placeholder="8"></div>
+        <div class="fld"><label>加班時數</label><input type="number" id="dOT" step="0.5" min="0" max="12" placeholder="0"></div>
+      </div>
+      <div class="row">
+        <div class="fld"><label>數量</label><input type="number" id="dQty" step="1" min="0" placeholder="完成數量"></div>
+        <div class="fld"><label>績效 (0-100)</label><input type="number" id="dPerf" step="0.1" min="0" max="100" placeholder="100"></div>
+      </div>
+      <button class="btn" id="btnAdd">存一筆</button>
+      <div class="hint">💡 日期預設今天、欄位可留空、隨時可改</div>
+    </div>
+  </section>
+
+  <!-- 列表 -->
+  <section id="list" class="tabpane" style="display:none">
+    <div class="card">
+      <h2>📋 記錄列表（最新在上）</h2>
+      <div id="listBox"></div>
+      <div class="hint">💡 長資料往下滑、點刪除即刻移除</div>
+    </div>
+  </section>
+
+  <!-- 統計 -->
+  <section id="stat" class="tabpane" style="display:none">
+    <div class="card">
+      <h2>📊 本月統計</h2>
+      <div class="seg" id="monthSeg"></div>
+      <div class="out" id="statOut">選月份看統計～</div>
+    </div>
+    <div class="card">
+      <h2>📈 近 6 個月趨勢</h2>
+      <canvas id="trendChart" height="120"></canvas>
+    </div>
+  </section>
+
+  <!-- 資料管理 -->
+  <section id="data" class="tabpane" style="display:none">
+    <div class="card">
+      <h2>💾 匯出 / 匯入 / 清空</h2>
+      <button class="btn" id="btnExportCSV">📥 匯出 CSV (Excel 可開)</button>
+      <button class="btn alt" id="btnExportJSON" style="margin-top:8px">📦 匯出完整備份 (JSON)</button>
+      <button class="btn ghost" id="btnImport" style="margin-top:8px">📤 匯入 CSV/JSON</button>
+      <input type="file" id="fileImport" accept=".csv,.json,text/csv" style="display:none">
+      <button class="btn ghost" id="btnClear" style="margin-top:8px">🗑 清空所有資料</button>
+      <div class="hint">💡 JSON 含所有記錄，適合換手機備份；CSV 適合 Excel 看</div>
+    </div>
+  </section>
+
+  <footer>小雲兒幫哥哥做的 💛 純本地、無帳號、無雲端、資料全在你手機</footer>
+</div>
+
+<!-- Chart.js (輕量 CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const KEY = 'work_log_v1';
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save(a) { localStorage.setItem(KEY, JSON.stringify(a)); }
+function pad2(n){return String(n).padStart(2,'0');}
+function fmtDate(d){return d;}
+
+// ===== Tab 切換 =====
+$('#tabs').addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(!t)return;
+  $$('.tab').forEach(x=>x.classList.remove('on'));
+  $$('.tabpane').forEach(x=>x.style.display='none');
+  t.classList.add('on');
+  document.getElementById(t.dataset.t).style.display='block';
+  if(t.dataset.t==='list') renderList();
+  if(t.dataset.t==='stat') renderStat();
+});
+
+// ===== 日期預設今天 =====
+$('#dDate').valueAsDate = new Date();
+
+// ===== 新增記錄 =====
+$('#btnAdd').onclick = () => {
+  const rec = {
+    id: genId(),
+    date: $('#dDate').value,
+    work: parseFloat($('#dWork').value)||0,
+    ot: parseFloat($('#dOT').value)||0,
+    qty: parseInt($('#dQty').value)||0,
+    perf: parseFloat($('#dPerf').value)||0
+  };
+  const a = load(); a.unshift(rec); save(a);
+  $('#dWork').value=''; $('#dOT').value=''; $('#dQty').value=''; $('#dPerf').value='';
+  renderList(); renderStat();
+};
+
+// ===== 渲染列表 =====
+function renderList() {
+  const a = load().sort((x,y)=> y.date.localeCompare(x.date));
+  const box = $('#listBox');
+  if(!a.length){ box.innerHTML='<div style="text-align:center;color:var(--dim);padding:40px">還沒記錄～</div>'; return; }
+  box.innerHTML = a.map(r => `
+    <div class="logitem">
+      <span class="del" onclick="delRec('${r.id}')">刪除</span>
+      <b>${r.date}</b>
+      <span style="margin-left:8px">上班 <b>${r.work}</b> h</span>
+      <span style="margin-left:8px">加班 <b>${r.ot}</b> h</span>
+      <span style="margin-left:8px">數量 <b>${r.qty}</b></span>
+      <span style="margin-left:8px">績效 <b>${r.perf}</b></span>
+    </div>`).join('');
+}
+window.delRec = id => {
+  if(!confirm('確定刪除？')) return;
+  const a = load().filter(r=>r.id!==id); save(a); renderList(); renderStat();
+};
+
+// ===== 統計 =====
+function renderStat() {
+  // 月份選單
+  const months = [...new Set(load().map(r=>r.date.slice(0,7)))].sort().reverse();
+  const seg = $('#monthSeg');
+  seg.innerHTML = months.map((m,i)=>`<button ${i===0?'class="on"':''} data-m="${m}">${m.replace('-','/')}</button>`).join('');
+  seg.onclick = e => {
+    const btn = e.target.closest('button'); if(!btn) return;
+    $$('#monthSeg button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    showMonthStat(btn.dataset.m);
+  };
+  if(months[0]) showMonthStat(months[0]);
+  renderTrend();
+}
+function showMonthStat(ym) {
+  const a = load().filter(r=>r.date.startsWith(ym));
+  const days = a.length;
+  const sumWork = a.reduce((s,r)=>s+(r.work||0),0);
+  const sumOT = a.reduce((s,r)=>s+(r.ot||0),0);
+  const sumQty = a.reduce((s,r)=>s+(r.qty||0),0);
+  const avgPerf = days ? (a.reduce((s,r)=>s+(r.perf||0),0)/days).toFixed(1) : 0;
+  const totalH = sumWork + sumOT;
+  $('#statOut').innerHTML = `
+    <b>${ym.replace('-','/')}</b> 共 <b>${days}</b> 筆<br>
+    上班 <b>${sumWork.toFixed(1)}</b> h｜加班 <b>${sumOT.toFixed(1)}</b> h｜總工時 <b>${totalH.toFixed(1)}</b> h<br>
+    數量 <b>${sumQty}</b> ｜平均績效 <b>${avgPerf}</b>
+  `;
+}
+function renderTrend() {
+  const a = load();
+  const monthly = {};
+  a.forEach(r=>{
+    const m=r.date.slice(0,7);
+    if(!monthly[m]) monthly[m]={work:0,ot:0,perf:0,cnt:0};
+    monthly[m].work+=r.work||0; monthly[m].ot+=r.ot||0; monthly[m].perf+=r.perf||0; monthly[m].cnt++;
+  });
+  const labels = Object.keys(monthly).sort().slice(-6);
+  const workD = labels.map(m=>monthly[m].work);
+  const otD = labels.map(m=>monthly[m].ot);
+  const perfD = labels.map(m=>(monthly[m].perf/monthly[m].cnt).toFixed(1));
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(window.trendChart) window.trendChart.destroy();
+  window.trendChart = new Chart(ctx, {
+    type:'bar', data:{labels, datasets:[
+      {label:'上班', data:workD, backgroundColor:'rgba(0,243,255,.7)', borderRadius:4},
+      {label:'加班', data:otD, backgroundColor:'rgba(255,95,162,.7)', borderRadius:4}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#7e93b3'}}},
+      scales:{x:{grid:{display:false}}, y:{beginAtZero:true, grid:{color:'rgba(255,255,255,.05)'}}}}
+  });
+}
+
+// ===== 匯出/匯入 =====
+function download(text, type, name) {
+  const blob=new Blob([text],{type}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url);
+}
+$('#btnExportCSV').onclick = () => {
+  const a=load(); if(!a.length) return alert('無資料');
+  const head=['日期','上班時數','加班時數','數量','績效'];
+  const rows=a.map(r=>[r.date,r.work,r.ot,r.qty,r.perf].join(','));
+  download('\uFEFF'+head.join(',')+'\n'+rows.join('\n'), 'text/csv', `work_${new Date().toISOString().slice(0,10)}.csv`);
+};
+$('#btnExportJSON').onclick = () => {
+  const a=load(); if(!a.length) return alert('無資料');
+  const backup={records:a, exportedAt:new Date().toISOString()};
+  download(JSON.stringify(backup,null,2), 'application/json', `work_backup_${new Date().toISOString().slice(0,10)}.json`);
+};
+$('#btnImport').onclick = () => $('#fileImport').click();
+$('#fileImport').onchange = e => {
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload = () => {
+    try {
+      let imported=[];
+      if(f.name.endsWith('.json')) {
+        const d=JSON.parse(rd.result); imported=d.records||d;
+      } else {
+        const lines=rd.result.replace(/\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+        const head=lines[0].split(',').map(h=>h.trim());
+        const idx={date:head.indexOf('日期'),w:head.indexOf('上班時數'),o:head.indexOf('加班時數'),q:head.indexOf('數量'),p:head.indexOf('績效')};
+        imported=lines.slice(1).map(l=>l.split(',')).filter(c=>c.length>1).map(c=>({
+          id:genId(), date:c[idx.date]||'', work:parseFloat(c[idx.w])||0, ot:parseFloat(c[idx.o])||0,
+          qty:parseInt(c[idx.q])||0, perf:parseFloat(c[idx.p])||0
+        })).filter(r=>r.date);
+      }
+      if(!imported.length) throw new Error('無有效資料');
+      const a=load(); imported.forEach(r=>a.unshift(r)); save(a);
+      renderList(); renderStat(); alert(`✅ 匯入 ${imported.length} 筆成功！`);
+    } catch(err) { alert('匯入失敗：'+err.message); }
+    e.target.value='';
+  };
+  rd.readAsText(f,'utf-8');
+};
+$('#btnClear').onclick = () => {
+  if(confirm('確定清空所有資料？無法復原！')){ localStorage.removeItem(KEY); renderList(); renderStat(); }
+};
+
+// 初始渲染
+renderList(); renderStat();
+</script>
+</body>
+</html>
